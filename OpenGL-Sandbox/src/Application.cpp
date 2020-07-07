@@ -221,26 +221,6 @@ public:
         while (!glfwWindowShouldClose(window))
         {
             
-
-            static const GLfloat green[] = { 0.0f, 0.25f, 0.0f, 1.0f };
-            static const GLfloat one = 1.0f;
-
-            glViewport(0, 0, 16 * window_size, 9 * window_size);
-            glClearBufferfv(GL_COLOR, 0, green);
-            glClearBufferfv(GL_DEPTH, 0, &one);
-
-            glUseProgram(program);
-
-            glUniformMatrix4fv(proj_location, 1, GL_FALSE, proj_matrix);
-
-            float f = (float)frame_counter * 0.3f;
-            glm::mat4 mv_matrix =   glm::translate(0.0f, 0.0f, -4.0f) *
-                                    glm::translate(sinf(2.1f * f) * 0.5f, cosf(1.7f * f) * 0.5f, sinf(1.3f * f) * cosf(1.5f * f) * 2.0f) *
-                                    glm::rotate((float)frame_counter * 45.0f, 0.0f, 1.0f, 0.0f) *
-                                    glm::rotate((float)frame_counter * 81.0f, 1.0f, 0.0f, 0.0f);
-            glUniformMatrix4fv(mv_location, 1, GL_FALSE, mv_matrix);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-            
             glfwSwapBuffers(window);
             glfwPollEvents();
             frame_counter++;
