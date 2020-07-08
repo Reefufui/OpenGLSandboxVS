@@ -6,13 +6,13 @@
 #include <string>
 #include <sstream>
 
-// Include .OBJ reader / GLM core / GLSL features
+// Include GLM core
 #include <glm/glm.hpp>
-#include <glm/ext.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/vector_angle.hpp>
 
-static std::string parseShader(const std::string filePath) // gets string from *.shader
+#define CURRENTLY_BOUND
+#define DATA_RECORD_IN_ONE_CALL
+
+static std::string parseShader(const std::string filePath) // gets string from shader file
 {
     std::stringstream code;
     std::string line;
@@ -28,65 +28,38 @@ static std::string parseShader(const std::string filePath) // gets string from *
 
 GLuint compile_shaders(void)
 {
-    //Compile and create VertexShader
-    GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    std::string vs_source = parseShader("res/shaders/Vertex.shader");
-    const GLchar* vs_src = vs_source.c_str();
-    glShaderSource(vertex_shader, 1, &vs_src, NULL);
-    glCompileShader(vertex_shader);
+    struct shader
+    {
+        int use;
+        GLenum type;
+        std::string path;
+    };
+    shader pipeline[] =
+    {
+        1, GL_VERTEX_SHADER,            "res/shaders/Vertex.glsl",
+        0, GL_TESS_CONTROL_SHADER,      "res/shaders/TessellationControl.glsl",
+        0, GL_TESS_EVALUATION_SHADER,   "res/shaders/TessellationEvaluation.glsl",
+        0, GL_GEOMETRY_SHADER,          "res/shaders/Geometry.glsl",
+        1, GL_FRAGMENT_SHADER,          "res/shaders/Fragment.glsl",
+        0, GL_COMPUTE_SHADER,           "res/shaders/Compute.glsl"
+    };
 
-    //Compile and create TessellationControl Shader
-    GLuint tessControl_shader = glCreateShader(GL_TESS_CONTROL_SHADER);
-    std::string tcs_source = parseShader("res/shaders/TessellationControl.shader");
-    const GLchar* tcs_src = tcs_source.c_str();
-    glShaderSource(tessControl_shader, 1, &tcs_src, NULL);
-    glCompileShader(tessControl_shader);
-
-    //Compile and create TessellationEvaluation Shader
-    GLuint tessEvaluation_shader = glCreateShader(GL_TESS_EVALUATION_SHADER);
-    std::string tes_source = parseShader("res/shaders/TessellationEvaluation.shader");
-    const GLchar* tes_src = tes_source.c_str();
-    glShaderSource(tessEvaluation_shader, 1, &tes_src, NULL);
-    glCompileShader(tessEvaluation_shader);
-
-    //Compile and create Geometry Shader
-    GLuint geometry_shader = glCreateShader(GL_GEOMETRY_SHADER);
-    std::string gs_source = parseShader("res/shaders/Geometry.shader");
-    const GLchar* gs_src = gs_source.c_str();
-    glShaderSource(geometry_shader, 1, &gs_src, NULL);
-    glCompileShader(geometry_shader);
-
-    //Compile and create FragmentShader
-    GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    std::string fs_source = parseShader("res/shaders/Fragment.shader");
-    const GLchar* fs_src = fs_source.c_str();
-    glShaderSource(fragment_shader, 1, &fs_src, NULL);
-    glCompileShader(fragment_shader);
-
-    //Compile and create ComputeShader
-    GLuint compute_shader = glCreateShader(GL_COMPUTE_SHADER);
-    std::string cs_source = parseShader("res/shaders/Compute.shader");
-    const GLchar* cs_src = cs_source.c_str();
-    glShaderSource(compute_shader, 1, &cs_src, NULL);
-    glCompileShader(compute_shader);
-
-    //Create Program & Link it with shaders
     GLuint program = glCreateProgram();
-    glAttachShader(program, vertex_shader);
-    //glAttachShader(program, tessControl_shader);
-    //glAttachShader(program, tessEvaluation_shader);
-    //glAttachShader(program, geometry_shader);
-    glAttachShader(program, fragment_shader);
-    //glAttachShader(program, compute_shader);
-    glLinkProgram(program);
 
-    //Delete all shaders
-    glDeleteShader(vertex_shader);
-    glDeleteShader(tessControl_shader);
-    glDeleteShader(tessEvaluation_shader);
-    glDeleteShader(geometry_shader);
-    glDeleteShader(fragment_shader);
-    glDeleteShader(compute_shader);
+    for (int i = 0; i < 6; i++)
+    {
+        if (pipeline[i].use)
+        {
+            GLuint shader_obj = glCreateShader(pipeline[i].type);
+            std::string shader_source = parseShader(pipeline[i].path);
+            const GLchar* shader_src = shader_source.c_str();
+            glShaderSource(shader_obj, 1, &shader_src, NULL);
+            glCompileShader(shader_obj);
+            glAttachShader(program, shader_obj);
+            glDeleteShader(shader_obj);
+        }
+    }
+    glLinkProgram(program);
 
     return program;
 };
@@ -136,74 +109,68 @@ public:
         program = compile_shaders();
         
         /* Data */
-        mv_location = glGetUniformLocation(program, "mv_matrix");
-        proj_location = glGetUniformLocation(program, "proj_matrix");
-
-        glGenVertexArrays(1, &vao);
-        glBindVertexArray(vao);
-
-        static const GLfloat vertex_positions[] =
+        static const struct vertex
         {
-            -0.25f,  0.25f, -0.25f,
-            -0.25f, -0.25f, -0.25f,
-             0.25f, -0.25f, -0.25f,
-
-             0.25f, -0.25f, -0.25f,
-             0.25f,  0.25f, -0.25f,
-            -0.25f,  0.25f, -0.25f,
-
-             0.25f, -0.25f, -0.25f,
-             0.25f, -0.25f,  0.25f,
-             0.25f,  0.25f, -0.25f,
-
-             0.25f, -0.25f,  0.25f,
-             0.25f,  0.25f,  0.25f,
-             0.25f,  0.25f, -0.25f,
-
-             0.25f, -0.25f,  0.25f,
-            -0.25f, -0.25f,  0.25f,
-             0.25f,  0.25f,  0.25f,
-
-            -0.25f, -0.25f,  0.25f,
-            -0.25f,  0.25f,  0.25f,
-             0.25f,  0.25f,  0.25f,
-
-            -0.25f, -0.25f,  0.25f,
-            -0.25f, -0.25f, -0.25f,
-            -0.25f,  0.25f,  0.25f,
-
-            -0.25f, -0.25f, -0.25f,
-            -0.25f,  0.25f, -0.25f,
-            -0.25f,  0.25f,  0.25f,
-
-            -0.25f, -0.25f,  0.25f,
-             0.25f, -0.25f,  0.25f,
-             0.25f, -0.25f, -0.25f,
-
-             0.25f, -0.25f, -0.25f,
-            -0.25f, -0.25f, -0.25f,
-            -0.25f, -0.25f,  0.25f,
-
-            -0.25f,  0.25f, -0.25f,
-             0.25f,  0.25f, -0.25f,
-             0.25f,  0.25f,  0.25f,
-
-             0.25f,  0.25f,  0.25f,
-            -0.25f,  0.25f,  0.25f,
-            -0.25f,  0.25f, -0.25f
+            //Coord
+            float x;
+            float y;
+            float z;
+            float w;
+            //Color
+            float r;
+            float g;
+            float b;
+            float a;
         };
 
-        glGenBuffers(1, &buffer);
-        glBindBuffer(GL_ARRAY_BUFFER, buffer);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_positions), vertex_positions, GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+        vertex vertices[] = {
+            -0.5f, -0.5f, 0.5f, 1.0f,
+             1.0f,  0.0f, 0.0f, 1.0f,
+
+            0.0f,  0.5f, 0.5f, 1.0f,
+             0.0f,  1.0f, 0.0f, 1.0f,
+
+            0.5f, -0.5f, 0.5f, 1.0f,
+             0.0f,  0.0f, 1.0f, 1.0f
+        };
+
+        glCreateVertexArrays(1, &vao);
+        glCreateBuffers(1, &buffer);
+
+#ifdef DATA_RECORD_IN_ONE_CALL
+        glNamedBufferStorage(buffer, sizeof(vertices), vertices, 0);
+#else
+        glNamedBufferStorage(buffer, 1024*1024, NULL, GL_MAP_WRITE_BIT);
+        void* ptr = glMapNamedBufferRange(buffer, 0, sizeof(vertices), GL_MAP_WRITE_BIT);
+        memcpy(ptr, vertices, sizeof(vertices));
+        glUnmapNamedBuffer(buffer);
+#endif // DATA_RECORD_IN_ONE_CALL
+
+
+#ifdef CURRENTLY_BOUND
+        glBindVertexArray(vao); //BIND HERE
+
+        glVertexAttribBinding(0, 0);
+        glVertexAttribFormat(0, 4, GL_FLOAT, GL_FALSE, offsetof(vertex, x));
         glEnableVertexAttribArray(0);
 
-        glEnable(GL_CULL_FACE);
-        glFrontFace(GL_CW);
+        glVertexAttribBinding(1, 0);
+        glVertexAttribFormat(1, 4, GL_FLOAT, GL_FALSE, offsetof(vertex, r));
+        glEnableVertexAttribArray(1);
 
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LEQUAL);
+        glBindVertexBuffer(0, buffer, 0, sizeof(vertex));
+#else 
+        glVertexArrayAttribBinding(vao, 0, 0);
+        glVertexArrayAttribFormat(vao, 0, 4, GL_FLOAT, GL_FALSE, offsetof(vertex, x));
+        glEnableVertexArrayAttrib(vao, 0);
+
+        glVertexArrayAttribBinding(vao, 1, 0);
+        glVertexArrayAttribFormat(vao, 1, 4, GL_FLOAT, GL_FALSE, offsetof(vertex, r));
+        glEnableVertexArrayAttrib(vao, 1);
+
+        glVertexArrayVertexBuffer(vao, 0, buffer, 0, sizeof(vertex));
+        glBindVertexArray(vao); //BIND HERE
+#endif // CURRENTLY_BOUND
 
         return 0;
     }
@@ -220,12 +187,17 @@ public:
         frame_counter = 0;
         while (!glfwWindowShouldClose(window))
         {
-            
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            glUseProgram(program);
+            glDrawArrays(GL_TRIANGLES, 0, 3);
+
             glfwSwapBuffers(window);
             glfwPollEvents();
             frame_counter++;
         }
         glDisableVertexArrayAttrib(vao, 0);
+        glDisableVertexArrayAttrib(vao, 1);
         frame_counter = 0;
     }
 
@@ -237,24 +209,13 @@ public:
         glfwTerminate();
     }
 
-    void onResize(int w, int h)
-    {
-        aspect = (float)w / (float)h;
-        proj_matrix = glm::perspective(50.0f, aspect, 0.1f, 1000.0f);
-    }
-
 private:
     char            window_size = 100;
     GLFWwindow*     window;
     GLuint          program;
     GLuint          vao;
     GLuint          buffer;
-    GLint           mv_location;
-    GLint           proj_location;
     unsigned int    frame_counter;
-
-    float           aspect;
-    glm::mat4       proj_matrix;
 };
 
 int main(void)

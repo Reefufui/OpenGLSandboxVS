@@ -157,12 +157,12 @@
     <ClCompile Include="src\vendor\glm\detail\glm.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\shaders\Compute.shader" />
-    <None Include="res\shaders\Fragment.shader" />
-    <None Include="res\shaders\Geometry.shader" />
-    <None Include="res\shaders\TessellationEvaluation.shader" />
-    <None Include="res\shaders\TessellationControl.shader" />
-    <None Include="res\shaders\Vertex.shader" />
+    <None Include="res\shaders\Compute.glsl" />
+    <None Include="res\shaders\Fragment.glsl" />
+    <None Include="res\shaders\Geometry.glsl" />
+    <None Include="res\shaders\TessellationEvaluation.glsl" />
+    <None Include="res\shaders\TessellationControl.glsl" />
+    <None Include="res\shaders\Vertex.glsl" />
     <None Include="src\vendor\glm\detail\func_common.inl" />
     <None Include="src\vendor\glm\detail\func_common_simd.inl" />
     <None Include="src\vendor\glm\detail\func_exponential.inl" />
