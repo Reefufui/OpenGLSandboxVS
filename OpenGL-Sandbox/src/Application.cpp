@@ -36,12 +36,12 @@ GLuint compile_shaders(void)
     };
     shader pipeline[] =
     {
-        1, GL_VERTEX_SHADER,            "res/shaders/Vertex.glsl",
-        0, GL_TESS_CONTROL_SHADER,      "res/shaders/TessellationControl.glsl",
-        0, GL_TESS_EVALUATION_SHADER,   "res/shaders/TessellationEvaluation.glsl",
-        0, GL_GEOMETRY_SHADER,          "res/shaders/Geometry.glsl",
-        1, GL_FRAGMENT_SHADER,          "res/shaders/Fragment.glsl",
-        0, GL_COMPUTE_SHADER,           "res/shaders/Compute.glsl"
+        {1, GL_VERTEX_SHADER,            "res/shaders/Vertex.glsl"},
+        {0, GL_TESS_CONTROL_SHADER,      "res/shaders/TessellationControl.glsl"},
+        {0, GL_TESS_EVALUATION_SHADER,   "res/shaders/TessellationEvaluation.glsl"},
+        {0, GL_GEOMETRY_SHADER,          "res/shaders/Geometry.glsl"},
+        {1, GL_FRAGMENT_SHADER,          "res/shaders/Fragment.glsl"},
+        {0, GL_COMPUTE_SHADER,           "res/shaders/Compute.glsl"}
     };
 
     GLuint program = glCreateProgram();
@@ -109,7 +109,7 @@ public:
         program = compile_shaders();
         
         /* Data */
-        static const struct vertex
+        const struct vertex
         {
             //Coord
             float x;
@@ -124,14 +124,14 @@ public:
         };
 
         vertex vertices[] = {
-            -0.5f, -0.5f, 0.5f, 1.0f,
-             1.0f,  0.0f, 0.0f, 1.0f,
+            {-0.5f, -0.5f, 0.5f, 1.0f,
+             1.0f,  0.0f, 0.0f, 1.0f},
 
-            0.0f,  0.5f, 0.5f, 1.0f,
-             0.0f,  1.0f, 0.0f, 1.0f,
+            {0.0f,  0.5f, 0.5f, 1.0f,
+             0.0f,  1.0f, 0.0f, 1.0f},
 
-            0.5f, -0.5f, 0.5f, 1.0f,
-             0.0f,  0.0f, 1.0f, 1.0f
+            {0.5f, -0.5f, 0.5f, 1.0f,
+             0.0f,  0.0f, 1.0f, 1.0f}
         };
 
         glCreateVertexArrays(1, &vao);
@@ -211,11 +211,11 @@ public:
 
 private:
     char            window_size = 100;
-    GLFWwindow*     window;
-    GLuint          program;
-    GLuint          vao;
-    GLuint          buffer;
-    unsigned int    frame_counter;
+    GLFWwindow*     window = NULL;
+    GLuint          program = 0;
+    GLuint          vao = 0;
+    GLuint          buffer = 0;
+    unsigned int    frame_counter = 0;
 };
 
 int main(void)
