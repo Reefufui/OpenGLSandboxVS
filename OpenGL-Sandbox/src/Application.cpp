@@ -210,12 +210,12 @@ public:
     }
 
 private:
-    char            window_size = 100;
+    char            window_size = 100; //default
     GLFWwindow*     window = NULL;
-    GLuint          program = 0;
-    GLuint          vao = 0;
-    GLuint          buffer = 0;
-    unsigned int    frame_counter = 0;
+    GLuint          program{};
+    GLuint          vao{};
+    GLuint          buffer{};
+    unsigned int    frame_counter{};
 };
 
 int main(void)
