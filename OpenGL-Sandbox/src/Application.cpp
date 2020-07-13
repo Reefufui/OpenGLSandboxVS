@@ -26,11 +26,11 @@ static std::string parseShader(const std::string filePath) // gets string from s
     return code.str();
 };
 
-GLuint compile_shaders(void)
+GLuint compileShaders(void)
 {
     struct shader
     {
-        int use;
+        int enabled;
         GLenum type;
         std::string path;
     };
@@ -48,15 +48,15 @@ GLuint compile_shaders(void)
 
     for (int i = 0; i < 6; i++)
     {
-        if (pipeline[i].use)
+        if (pipeline[i].enabled)
         {
-            GLuint shader_obj = glCreateShader(pipeline[i].type);
-            std::string shader_source = parseShader(pipeline[i].path);
-            const GLchar* shader_src = shader_source.c_str();
-            glShaderSource(shader_obj, 1, &shader_src, NULL);
-            glCompileShader(shader_obj);
-            glAttachShader(program, shader_obj);
-            glDeleteShader(shader_obj);
+            GLuint shaderObj = glCreateShader(pipeline[i].type);
+            std::string shaderSource = parseShader(pipeline[i].path);
+            const GLchar* shaderSrc = shaderSource.c_str();
+            glShaderSource(shaderObj, 1, &shaderSrc, NULL);
+            glCompileShader(shaderObj);
+            glAttachShader(program, shaderObj);
+            glDeleteShader(shaderObj);
         }
     }
     glLinkProgram(program);
@@ -65,33 +65,33 @@ GLuint compile_shaders(void)
 };
 
 void GLAPIENTRY MessageCallback(GLenum source,
-    GLenum type,
-    GLuint id,
-    GLenum severity,
-    GLsizei length,
-    const GLchar* message,
-    const void* userParam)
+                                GLenum type,
+                                GLuint id,
+                                GLenum severity,
+                                GLsizei length,
+                                const GLchar* message,
+                                const void* userParam)
 {
     fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
         (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
         type, severity, message);
 };
 
-class my_application
+class Application
 {
 public:
     int startup()
     {
         /* Initialize the library */
         if (!glfwInit())
-            return -1;
+            return 1;
 
         /* Create a windowed mode window and its OpenGL context */
-        window = glfwCreateWindow(16 * window_size, 9 * window_size, "Window name", NULL, NULL);
+        window = glfwCreateWindow(16 * windowSize, 9 * windowSize, "Window name", NULL, NULL);
         if (!window)
         {
             glfwTerminate();
-            return -1;
+            return 1;
         }
 
         /* Make the window's context current and initialize glew */
@@ -106,7 +106,7 @@ public:
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 
         /* Compiling and linking our program */
-        program = compile_shaders();
+        program = compileShaders();
         
         /* Data */
         const struct vertex
@@ -184,7 +184,7 @@ public:
         glDebugMessageCallback(MessageCallback, 0);
 
         /* Updates */
-        frame_counter = 0;
+        frameCounter = 0;
         while (!glfwWindowShouldClose(window))
         {
             glClear(GL_COLOR_BUFFER_BIT);
@@ -194,11 +194,11 @@ public:
 
             glfwSwapBuffers(window);
             glfwPollEvents();
-            frame_counter++;
+            frameCounter++;
         }
         glDisableVertexArrayAttrib(vao, 0);
         glDisableVertexArrayAttrib(vao, 1);
-        frame_counter = 0;
+        frameCounter = 0;
     }
 
     void shutdown()
@@ -210,7 +210,7 @@ public:
     }
 
 private:
-    char            window_size = 100; //default
+    char            windowSize = 100; //default
     GLFWwindow*     window = NULL;
     GLuint          program{};
     GLuint          vao{};
@@ -220,11 +220,11 @@ private:
 
 int main(void)
 {
-    my_application Application;
-    if (!Application.startup()) //returns -1 if error
+    Application app;
+    if (!app.startup()) //returns -1 if error
     {
-        Application.render();
-        Application.shutdown();
+        app.render();
+        app.shutdown();
     }
     return 0;
 }
