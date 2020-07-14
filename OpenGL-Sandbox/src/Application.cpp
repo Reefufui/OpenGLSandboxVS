@@ -6,13 +6,12 @@
 #include <string>
 #include <sstream>
 
-// Include GLM core
 #include <glm/glm.hpp>
 
 #define CURRENTLY_BOUND
 #define DATA_RECORD_IN_ONE_CALL
 
-static std::string parseShader(const std::string filePath) // gets string from shader file
+std::string parseShader(const std::string filePath) // gets string from shader file
 {
     std::stringstream code;
     std::string line;
@@ -28,13 +27,14 @@ static std::string parseShader(const std::string filePath) // gets string from s
 
 GLuint compileShaders(void)
 {
+    const int shadersCount = 6; // there is 6 shaders in OpenGL pipeline
     struct shader
     {
         int enabled;
         GLenum type;
         std::string path;
     };
-    shader pipeline[] =
+    shader pipeline[shadersCount] =
     {
         {1, GL_VERTEX_SHADER,            "res/shaders/Vertex.glsl"},
         {0, GL_TESS_CONTROL_SHADER,      "res/shaders/TessellationControl.glsl"},
@@ -46,7 +46,7 @@ GLuint compileShaders(void)
 
     GLuint program = glCreateProgram();
 
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < shadersCount; i++)
     {
         if (pipeline[i].enabled)
         {
@@ -184,7 +184,7 @@ public:
         glDebugMessageCallback(MessageCallback, 0);
 
         /* Updates */
-        frameCounter = 0;
+        frameCounter(0);
         while (!glfwWindowShouldClose(window))
         {
             glClear(GL_COLOR_BUFFER_BIT);
@@ -194,11 +194,11 @@ public:
 
             glfwSwapBuffers(window);
             glfwPollEvents();
-            frameCounter++;
+            ++frameCounter;
         }
         glDisableVertexArrayAttrib(vao, 0);
         glDisableVertexArrayAttrib(vao, 1);
-        frameCounter = 0;
+        frameCounter(0);
     }
 
     void shutdown()
