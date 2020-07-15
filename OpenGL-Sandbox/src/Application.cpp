@@ -28,13 +28,13 @@ std::string parseShader(const std::string filePath) // gets string from shader f
 GLuint compileShaders(void)
 {
     const int shadersCount = 6; // there is 6 shaders in OpenGL pipeline
-    struct shader
+    struct Shader
     {
         int enabled;
         GLenum type;
         std::string path;
     };
-    shader pipeline[shadersCount] =
+    Shader pipeline[shadersCount] =
     {
         {1, GL_VERTEX_SHADER,            "res/shaders/Vertex.glsl"},
         {0, GL_TESS_CONTROL_SHADER,      "res/shaders/TessellationControl.glsl"},
@@ -109,7 +109,7 @@ public:
         program = compileShaders();
         
         /* Data */
-        const struct vertex
+        const struct Vertex
         {
             //Coord
             float x;
@@ -123,7 +123,7 @@ public:
             float a;
         };
 
-        vertex vertices[] = {
+        Vertex vertices[] = {
             {-0.5f, -0.5f, 0.5f, 1.0f,
              1.0f,  0.0f, 0.0f, 1.0f},
 
@@ -151,24 +151,24 @@ public:
         glBindVertexArray(vao); //BIND HERE
 
         glVertexAttribBinding(0, 0);
-        glVertexAttribFormat(0, 4, GL_FLOAT, GL_FALSE, offsetof(vertex, x));
+        glVertexAttribFormat(0, 4, GL_FLOAT, GL_FALSE, offsetof(Vertex, x));
         glEnableVertexAttribArray(0);
 
         glVertexAttribBinding(1, 0);
-        glVertexAttribFormat(1, 4, GL_FLOAT, GL_FALSE, offsetof(vertex, r));
+        glVertexAttribFormat(1, 4, GL_FLOAT, GL_FALSE, offsetof(Vertex, r));
         glEnableVertexAttribArray(1);
 
         glBindVertexBuffer(0, buffer, 0, sizeof(vertex));
 #else 
         glVertexArrayAttribBinding(vao, 0, 0);
-        glVertexArrayAttribFormat(vao, 0, 4, GL_FLOAT, GL_FALSE, offsetof(vertex, x));
+        glVertexArrayAttribFormat(vao, 0, 4, GL_FLOAT, GL_FALSE, offsetof(Vertex, x));
         glEnableVertexArrayAttrib(vao, 0);
 
         glVertexArrayAttribBinding(vao, 1, 0);
-        glVertexArrayAttribFormat(vao, 1, 4, GL_FLOAT, GL_FALSE, offsetof(vertex, r));
+        glVertexArrayAttribFormat(vao, 1, 4, GL_FLOAT, GL_FALSE, offsetof(Vertex, r));
         glEnableVertexArrayAttrib(vao, 1);
 
-        glVertexArrayVertexBuffer(vao, 0, buffer, 0, sizeof(vertex));
+        glVertexArrayVertexBuffer(vao, 0, buffer, 0, sizeof(Vertex));
         glBindVertexArray(vao); //BIND HERE
 #endif // CURRENTLY_BOUND
 
