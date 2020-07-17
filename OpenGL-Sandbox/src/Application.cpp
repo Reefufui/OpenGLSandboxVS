@@ -158,7 +158,7 @@ public:
         glVertexAttribFormat(1, 4, GL_FLOAT, GL_FALSE, offsetof(Vertex, r));
         glEnableVertexAttribArray(1);
 
-        glBindVertexBuffer(0, buffer, 0, sizeof(vertex));
+        glBindVertexBuffer(0, buffer, 0, sizeof(Vertex));
 #else 
         glVertexArrayAttribBinding(vao, 0, 0);
         glVertexArrayAttribFormat(vao, 0, 4, GL_FLOAT, GL_FALSE, offsetof(Vertex, x));
@@ -184,7 +184,7 @@ public:
         glDebugMessageCallback(MessageCallback, 0);
 
         /* Updates */
-        frameCounter(0);
+        frameCounter = 0;
         while (!glfwWindowShouldClose(window))
         {
             glClear(GL_COLOR_BUFFER_BIT);
@@ -198,7 +198,7 @@ public:
         }
         glDisableVertexArrayAttrib(vao, 0);
         glDisableVertexArrayAttrib(vao, 1);
-        frameCounter(0);
+        frameCounter = 0;
     }
 
     void shutdown()
@@ -215,7 +215,7 @@ private:
     GLuint          program{};
     GLuint          vao{};
     GLuint          buffer{};
-    unsigned int    frame_counter{};
+    unsigned int    frameCounter{};
 };
 
 int main(void)
