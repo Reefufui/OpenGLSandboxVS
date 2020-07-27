@@ -5,6 +5,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <cassert>
 
 #include <glm/glm.hpp>
 
@@ -13,8 +14,8 @@
 
 std::string parseShader(const std::string filePath) // gets string from shader file
 {
-    std::stringstream code;
-    std::string line;
+    std::stringstream code{};
+    std::string line{};
     std::ifstream file(filePath);
 
     while (getline(file, line))
@@ -22,6 +23,7 @@ std::string parseShader(const std::string filePath) // gets string from shader f
         code << line << '\n';
     }
     file.close();
+
     return code.str();
 };
 
@@ -30,9 +32,9 @@ GLuint compileShaders(void)
     const int shadersCount = 6; // there is 6 shaders in OpenGL pipeline
     struct Shader
     {
-        int enabled;
-        GLenum type;
-        std::string path;
+        int enabled{};
+        GLenum type{};
+        std::string path{};
     };
     Shader pipeline[shadersCount] =
     {
@@ -50,9 +52,9 @@ GLuint compileShaders(void)
     {
         if (pipeline[i].enabled)
         {
-            GLuint shaderObj = glCreateShader(pipeline[i].type);
-            std::string shaderSource = parseShader(pipeline[i].path);
-            const GLchar* shaderSrc = shaderSource.c_str();
+            GLuint shaderObj{ glCreateShader(pipeline[i].type) };
+            std::string shaderSource{ parseShader(pipeline[i].path) };
+            const GLchar* shaderSrc{ shaderSource.c_str() };
             glShaderSource(shaderObj, 1, &shaderSrc, NULL);
             glCompileShader(shaderObj);
             glAttachShader(program, shaderObj);
@@ -82,33 +84,26 @@ class Application
 public:
     int startup()
     {
-        /* Initialize the library */
-        if (!glfwInit())
-            return 1;
+        assert( glfwInit() );
 
-        /* Create a windowed mode window and its OpenGL context */
+        // Create a windowed mode window and its OpenGL context
         window = glfwCreateWindow(16 * windowSize, 9 * windowSize, "Window name", NULL, NULL);
         if (!window)
         {
             glfwTerminate();
-            return 1;
+            assert(0 && "Window creation error" );
         }
-
-        /* Make the window's context current and initialize glew */
         glfwMakeContextCurrent(window);
-        if (glewInit() != GLEW_OK)
-        {
-            std::cout << "Error!" << std::endl;
-        };
-        glfwSwapInterval(1); //60 fpc
+        assert(glewInit() == GLEW_OK);
 
-        /* Debug stuff */
+        // GLFW hints
+        glfwSwapInterval(1); //60 fpc
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 
-        /* Compiling and linking our program */
+        // Compiling and linking our program
         program = compileShaders();
         
-        /* Data */
+        // Data
         const struct Vertex
         {
             //Coord
