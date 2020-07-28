@@ -6,11 +6,10 @@
 #include <string>
 #include <sstream>
 #include <cassert>
+#include <math.h>
 
 #include <glm/glm.hpp>
-
-#define CURRENTLY_BOUND
-#define DATA_RECORD_IN_ONE_CALL
+#include <glm/trigonometric.hpp> //for glm::sin
 
 std::string parseShader(const std::string filePath) // gets string from shader file
 {
@@ -118,31 +117,55 @@ public:
             float a;
         };
 
-        Vertex vertices[] = {
-            {-0.5f, -0.5f, 0.5f, 1.0f,
-             1.0f,  0.0f, 0.0f, 1.0f},
+        float vertices[] = {
+            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+             0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+             0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+             0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
-            {0.0f,  0.5f, 0.5f, 1.0f,
-             0.0f,  1.0f, 0.0f, 1.0f},
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+             0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+             0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+             0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+            -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
 
-            {0.5f, -0.5f, 0.5f, 1.0f,
-             0.0f,  0.0f, 1.0f, 1.0f}
+            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+             0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+             0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+             0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+             0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+             0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+             0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+             0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+             0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
         };
 
         glCreateVertexArrays(1, &vao);
         glCreateBuffers(1, &buffer);
 
-#ifdef DATA_RECORD_IN_ONE_CALL
         glNamedBufferStorage(buffer, sizeof(vertices), vertices, 0);
-#else
-        glNamedBufferStorage(buffer, 1024*1024, NULL, GL_MAP_WRITE_BIT);
-        void* ptr = glMapNamedBufferRange(buffer, 0, sizeof(vertices), GL_MAP_WRITE_BIT);
-        memcpy(ptr, vertices, sizeof(vertices));
-        glUnmapNamedBuffer(buffer);
-#endif // DATA_RECORD_IN_ONE_CALL
 
-
-#ifdef CURRENTLY_BOUND
         glBindVertexArray(vao); //BIND HERE
 
         glVertexAttribBinding(0, 0);
@@ -154,18 +177,6 @@ public:
         glEnableVertexAttribArray(1);
 
         glBindVertexBuffer(0, buffer, 0, sizeof(Vertex));
-#else 
-        glVertexArrayAttribBinding(vao, 0, 0);
-        glVertexArrayAttribFormat(vao, 0, 4, GL_FLOAT, GL_FALSE, offsetof(Vertex, x));
-        glEnableVertexArrayAttrib(vao, 0);
-
-        glVertexArrayAttribBinding(vao, 1, 0);
-        glVertexArrayAttribFormat(vao, 1, 4, GL_FLOAT, GL_FALSE, offsetof(Vertex, r));
-        glEnableVertexArrayAttrib(vao, 1);
-
-        glVertexArrayVertexBuffer(vao, 0, buffer, 0, sizeof(Vertex));
-        glBindVertexArray(vao); //BIND HERE
-#endif // CURRENTLY_BOUND
 
         return 0;
     }
@@ -179,21 +190,19 @@ public:
         glDebugMessageCallback(MessageCallback, 0);
 
         /* Updates */
-        frameCounter = 0;
         while (!glfwWindowShouldClose(window))
         {
-            glClear(GL_COLOR_BUFFER_BIT);
+            glClearColor(0.7f * glm::sin(glfwGetTime()), 0.3f, 0.3f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             glUseProgram(program);
             glDrawArrays(GL_TRIANGLES, 0, 3);
 
             glfwSwapBuffers(window);
             glfwPollEvents();
-            ++frameCounter;
         }
         glDisableVertexArrayAttrib(vao, 0);
         glDisableVertexArrayAttrib(vao, 1);
-        frameCounter = 0;
     }
 
     void shutdown()
@@ -210,7 +219,6 @@ private:
     GLuint          program{};
     GLuint          vao{};
     GLuint          buffer{};
-    unsigned int    frameCounter{};
 };
 
 int main(void)
