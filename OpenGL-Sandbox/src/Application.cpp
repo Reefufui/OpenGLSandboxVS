@@ -10,6 +10,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/trigonometric.hpp> //for glm::sin
+#include <glm/gtc/type_ptr.hpp> //for glm::value_ptr
 
 std::string parseShader(const std::string filePath) // gets string from shader file
 {
@@ -86,7 +87,7 @@ public:
         assert( glfwInit() );
 
         // Create a windowed mode window and its OpenGL context
-        window = glfwCreateWindow(16 * windowSize, 9 * windowSize, "Window name", NULL, NULL);
+        window = glfwCreateWindow(9 * windowSize, 9 * windowSize, "Window name", NULL, NULL);
         if (!window)
         {
             glfwTerminate();
@@ -103,86 +104,83 @@ public:
         program = compileShaders();
         
         // Data
-        const struct Vertex
+        static const GLfloat vertexPositions[] =
         {
-            //Coord
-            float x;
-            float y;
-            float z;
-            float w;
-            //Color
-            float r;
-            float g;
-            float b;
-            float a;
+            -0.25f,  0.25f, -0.25f,
+            -0.25f, -0.25f, -0.25f,
+             0.25f, -0.25f, -0.25f,
+
+             0.25f, -0.25f, -0.25f,
+             0.25f,  0.25f, -0.25f,
+            -0.25f,  0.25f, -0.25f,
+
+             0.25f, -0.25f, -0.25f,
+             0.25f, -0.25f,  0.25f,
+             0.25f,  0.25f, -0.25f,
+
+             0.25f, -0.25f,  0.25f,
+             0.25f,  0.25f,  0.25f,
+             0.25f,  0.25f, -0.25f,
+
+             0.25f, -0.25f,  0.25f,
+            -0.25f, -0.25f,  0.25f,
+             0.25f,  0.25f,  0.25f,
+
+            -0.25f, -0.25f,  0.25f,
+            -0.25f,  0.25f,  0.25f,
+             0.25f,  0.25f,  0.25f,
+
+            -0.25f, -0.25f,  0.25f,
+            -0.25f, -0.25f, -0.25f,
+            -0.25f,  0.25f,  0.25f,
+
+            -0.25f, -0.25f, -0.25f,
+            -0.25f,  0.25f, -0.25f,
+            -0.25f,  0.25f,  0.25f,
+
+            -0.25f, -0.25f,  0.25f,
+             0.25f, -0.25f,  0.25f,
+             0.25f, -0.25f, -0.25f,
+
+             0.25f, -0.25f, -0.25f,
+            -0.25f, -0.25f, -0.25f,
+            -0.25f, -0.25f,  0.25f,
+
+            -0.25f,  0.25f, -0.25f,
+             0.25f,  0.25f, -0.25f,
+             0.25f,  0.25f,  0.25f,
+
+             0.25f,  0.25f,  0.25f,
+            -0.25f,  0.25f,  0.25f,
+            -0.25f,  0.25f, -0.25f
         };
 
-        float vertices[] = {
-            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-             0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-             0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-             0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+        glGenVertexArrays(1, &vao);
+        glBindVertexArray(vao);
 
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-             0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-             0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-             0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-            -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        glGenBuffers(1, &buffer);
+        glBindBuffer(GL_ARRAY_BUFFER, buffer);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPositions), vertexPositions, GL_STATIC_DRAW);
 
-            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-            -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-            -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-             0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-             0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-             0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-             0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-             0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-             0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-             0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-             0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-             0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-            -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-            -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-        };
-
-        glCreateVertexArrays(1, &vao);
-        glCreateBuffers(1, &buffer);
-
-        glNamedBufferStorage(buffer, sizeof(vertices), vertices, 0);
-
-        glBindVertexArray(vao); //BIND HERE
-
-        glVertexAttribBinding(0, 0);
-        glVertexAttribFormat(0, 4, GL_FLOAT, GL_FALSE, offsetof(Vertex, x));
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
         glEnableVertexAttribArray(0);
 
-        glVertexAttribBinding(1, 0);
-        glVertexAttribFormat(1, 4, GL_FLOAT, GL_FALSE, offsetof(Vertex, r));
-        glEnableVertexAttribArray(1);
 
-        glBindVertexBuffer(0, buffer, 0, sizeof(Vertex));
+        glEnable(GL_CULL_FACE);
+        glFrontFace(GL_CW);
+
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LEQUAL);
 
         return 0;
     }
 
     void render()
     {
+        /* Data */
+        GLint mv_location{ glGetUniformLocation(program, "mvMatrix") };
+        GLint proj_location{ glGetUniformLocation(program, "projMatrix") };
+
         /* Debug */
         printf("%s\n", glGetString(GL_VERSION));
         glEnable(GL_DEBUG_OUTPUT);
@@ -196,7 +194,11 @@ public:
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             glUseProgram(program);
-            glDrawArrays(GL_TRIANGLES, 0, 3);
+
+
+            glUniformMatrix4fv(mv_location, 1, GL_FALSE, reinterpret_cast<const GLfloat*>(glm::value_ptr(mvMatrix)));
+
+            glDrawArrays(GL_TRIANGLES, 0, 36);
 
             glfwSwapBuffers(window);
             glfwPollEvents();
@@ -214,11 +216,13 @@ public:
     }
 
 private:
-    char            windowSize = 100; //default
+    char            windowSize = 50; //default
     GLFWwindow*     window = NULL;
     GLuint          program{};
     GLuint          vao{};
     GLuint          buffer{};
+    glm::mat4       mvMatrix{ 1.0f };
+    glm::mat4       projMatrix{ 1.0f };
 };
 
 int main(void)
