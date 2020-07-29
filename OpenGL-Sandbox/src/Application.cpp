@@ -84,14 +84,14 @@ class Application
 public:
     int startup()
     {
-        assert( glfwInit() );
+        assert(glfwInit());
 
         // Create a windowed mode window and its OpenGL context
-        window = glfwCreateWindow(16 * windowSize, 9 * windowSize, "CLOWN CUBE", NULL, NULL);
+        window = glfwCreateWindow(16 * windowSize, 9 * windowSize, "TOP TEXT", NULL, NULL);
         if (!window)
         {
             glfwTerminate();
-            assert(0 && "Window creation error" );
+            assert(0 && "Window creation error");
         }
         glfwMakeContextCurrent(window);
         assert(glewInit() == GLEW_OK);
@@ -102,7 +102,7 @@ public:
 
         // Compiling and linking our program
         program = compileShaders();
-        
+
         // Data
         static const GLfloat vertexPositions[] =
         {
@@ -160,10 +160,18 @@ public:
 
         glGenBuffers(1, &buffer);
         glBindBuffer(GL_ARRAY_BUFFER, buffer);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPositions), vertexPositions, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPositions), vertexPositions, GL_STATIC_DRAW);        
 
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
         glEnableVertexAttribArray(0);
+
+        //glCreateTextures(GL_TEXTURE_2D, 1, &texture);
+        //glTextureStorage2D(texture, 1, GL_RGBA32F, 256, 256);
+
+        //float *data{ new float[256 * 256 * 4] };
+        //generateTexture(data, 256, 256);
+        //glTextureSubImage2D(texture, 0, 0, 0, 256, 256, GL_RGBA, GL_FLOAT, data);
+        //delete[] data;
 
         return 0;
     }
@@ -177,55 +185,23 @@ public:
         glDebugMessageCallback(MessageCallback, 0);
 
         /* Data */
-        GLint mvpLocation{ glGetUniformLocation(program, "mvpMatrix") };
-        glm::vec3 cubePositions[] = {
-            glm::vec3(0.0f,  0.0f,  0.0f),
-            glm::vec3(2.0f,  5.0f, -15.0f),
-            glm::vec3(-1.5f, -2.2f, -2.5f),
-            glm::vec3(-3.8f, -2.0f, -12.3f),
-            glm::vec3(2.4f, -0.4f, -3.5f),
-            glm::vec3(-1.7f,  3.0f, -7.5f),
-            glm::vec3(1.3f, -2.0f, -2.5f),
-            glm::vec3(1.5f,  2.0f, -2.5f),
-            glm::vec3(1.5f,  0.2f, -1.5f),
-            glm::vec3(-1.3f,  1.0f, -1.5f)
-        };
+        GLint textureLocation{ glGetUniformLocation(program, "s") };
 
-        glEnable(GL_CULL_FACE);
-        glFrontFace(GL_CW);
-
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LEQUAL);
-        glLineWidth(4);
-
-       
+        glLineWidth(4);       
 
         // Updates
         while (!glfwWindowShouldClose(window))
         {
-            glClearColor(0.01f * glm::exp(glfwGetTime()), 0.2f, 0.1f, 1.0f);
+            glClearColor(0.01f, 0.2f, 0.1f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-
             glUseProgram(program);
-
-            xRay(this);
-
-            for (glm::vec3 pos : cubePositions)
-            {
-                getKeysWASD(this);
-                mvpMatrix = glm::translate(mvpMatrix, pos);
-                glUniformMatrix4fv(mvpLocation, 1, GL_TRUE, glm::value_ptr(mvpMatrix));
-                glDrawArrays(GL_TRIANGLES, 0, 36);
-                mvpMatrix = glm::translate(mvpMatrix, -pos);
-            }
-
+            glDrawArrays(GL_TRIANGLES, 0, 3);
+            
             glfwSwapBuffers(window);
             glfwPollEvents();
         }
         glDisableVertexArrayAttrib(vao, 0);
-        glDisableVertexArrayAttrib(vao, 1);
     }
 
 
@@ -246,6 +222,7 @@ private:
     GLuint          program{};
     GLuint          vao{};
     GLuint          buffer{};
+    GLuint          texture{};
     glm::mat4       mvpMatrix{ 1.0f };
 };
 

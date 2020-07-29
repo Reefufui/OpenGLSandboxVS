@@ -1,13 +1,10 @@
 #version 450 core
 
-in VS_OUT
-{
-	vec4 color;
-} fs_in;
+uniform Sampler2D s;
 
 out vec4 color;
 
 void main(void)
 {
-	color = fs_in.color;
+	color = texelFetch(s, ivec2(gl_FragCoord.xy), 0);
 }
