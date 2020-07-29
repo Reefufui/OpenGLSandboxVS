@@ -87,7 +87,7 @@ public:
         assert( glfwInit() );
 
         // Create a windowed mode window and its OpenGL context
-        window = glfwCreateWindow(9 * windowSize, 9 * windowSize, "Window name", NULL, NULL);
+        window = glfwCreateWindow(9 * windowSize, 9 * windowSize, "CLOWN CUBE", NULL, NULL);
         if (!window)
         {
             glfwTerminate();
@@ -97,7 +97,7 @@ public:
         assert(glewInit() == GLEW_OK);
 
         // GLFW hints
-        glfwSwapInterval(1); //60 fpc
+        glfwSwapInterval(1);
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 
         // Compiling and linking our program
@@ -166,11 +166,7 @@ public:
         glEnableVertexAttribArray(0);
 
 
-        glEnable(GL_CULL_FACE);
-        glFrontFace(GL_CW);
 
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LEQUAL);
 
         return 0;
     }
@@ -178,8 +174,8 @@ public:
     void render()
     {
         /* Data */
-        GLint mv_location{ glGetUniformLocation(program, "mvMatrix") };
-        GLint proj_location{ glGetUniformLocation(program, "projMatrix") };
+        GLint mvLocation{ glGetUniformLocation(program, "mvMatrix") };
+        GLint projLocation{ glGetUniformLocation(program, "projMatrix") };
 
         /* Debug */
         printf("%s\n", glGetString(GL_VERSION));
@@ -187,16 +183,41 @@ public:
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         glDebugMessageCallback(MessageCallback, 0);
 
+        glm::vec3 cubePositions[] = {
+            glm::vec3(0.0f,  0.0f,  0.0f),
+            glm::vec3(2.0f,  5.0f, -15.0f),
+            glm::vec3(-1.5f, -2.2f, -2.5f),
+            glm::vec3(-3.8f, -2.0f, -12.3f),
+            glm::vec3(2.4f, -0.4f, -3.5f),
+            glm::vec3(-1.7f,  3.0f, -7.5f),
+            glm::vec3(1.3f, -2.0f, -2.5f),
+            glm::vec3(1.5f,  2.0f, -2.5f),
+            glm::vec3(1.5f,  0.2f, -1.5f),
+            glm::vec3(-1.3f,  1.0f, -1.5f)
+        };
+
+        glEnable(GL_CULL_FACE);
+        glFrontFace(GL_CW);
+
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LEQUAL);
+        glLineWidth(4);
+
+
         /* Updates */
         while (!glfwWindowShouldClose(window))
         {
-            glClearColor(0.7f * glm::sin(glfwGetTime()), 0.3f, 0.3f, 1.0f);
+            glClearColor(0.01f * glm::exp(glfwGetTime()), 0.2f, 0.1f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             glUseProgram(program);
 
+            getKeysWASD(this);
 
-            glUniformMatrix4fv(mv_location, 1, GL_FALSE, reinterpret_cast<const GLfloat*>(glm::value_ptr(mvMatrix)));
+            glUniformMatrix4fv(projLocation, 1, GL_FALSE, glm::value_ptr(projMatrix));
+            glUniformMatrix4fv(mvLocation, 1, GL_FALSE, glm::value_ptr(mvMatrix));
+
+            xRay(this);
 
             glDrawArrays(GL_TRIANGLES, 0, 36);
 
@@ -207,6 +228,7 @@ public:
         glDisableVertexArrayAttrib(vao, 1);
     }
 
+
     void shutdown()
     {
         glDeleteVertexArrays(1, &vao);
@@ -215,8 +237,11 @@ public:
         glfwTerminate();
     }
 
+    friend void getKeysWASD(Application *app);
+    friend void xRay(Application* app);
+
 private:
-    char            windowSize = 50; //default
+    char            windowSize = 100; //default
     GLFWwindow*     window = NULL;
     GLuint          program{};
     GLuint          vao{};
@@ -224,6 +249,37 @@ private:
     glm::mat4       mvMatrix{ 1.0f };
     glm::mat4       projMatrix{ 1.0f };
 };
+
+void getKeysWASD(Application *app)
+{
+            if (glfwGetKey(app->window, GLFW_KEY_W) == GLFW_PRESS)
+                app->mvMatrix = glm::rotate(app->mvMatrix,  0.1f * static_cast<float>(glfwGetTime()), glm::vec3(1.0f, 0.0f, 0.0f));
+            if (glfwGetKey(app->window, GLFW_KEY_A) == GLFW_PRESS)
+                app->mvMatrix = glm::rotate(app->mvMatrix, 0.1f * static_cast<float>(glfwGetTime()), glm::vec3(0.0f, 0.0f, 1.0f));
+            if (glfwGetKey(app->window, GLFW_KEY_S) == GLFW_PRESS)
+                app->mvMatrix = glm::rotate(app->mvMatrix, 0.1f * static_cast<float>(glfwGetTime()), glm::vec3(-1.0f, 0.0f, 0.0f));
+            if (glfwGetKey(app->window, GLFW_KEY_D) == GLFW_PRESS)
+                app->mvMatrix = glm::rotate(app->mvMatrix, 0.1f * static_cast<float>(glfwGetTime()), glm::vec3(0.0f, 0.0f, -1.0f));
+            if (glfwGetKey(app->window, GLFW_KEY_W) != GLFW_PRESS && glfwGetKey(app->window, GLFW_KEY_A) != GLFW_PRESS &&
+                glfwGetKey(app->window, GLFW_KEY_S) != GLFW_PRESS && glfwGetKey(app->window, GLFW_KEY_D) != GLFW_PRESS)
+                glfwSetTime(0);
+}
+
+void xRay(Application* app)
+{
+            if (glfwGetKey(app->window, GLFW_KEY_X) == GLFW_PRESS)
+            {
+                glEnable(GL_POLYGON_SMOOTH);
+                glDisable(GL_CULL_FACE);
+                glEnable(GL_LINE_SMOOTH);
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            }
+            else
+            {
+                glEnable(GL_CULL_FACE);
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            }
+}
 
 int main(void)
 {
